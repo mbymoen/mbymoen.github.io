@@ -20,14 +20,17 @@
         width: 100vw;
         height: 100vh;
       }
+
       .header {
-        padding: 2px;
+        padding: 4px;
         text-align: center;
-        margin:0px;
+        margin:4px;
         font-size:20px;
       }
+
       #map { 
         height:88vh; 
+        width:99vw;
       }
 
       h2 {
@@ -47,12 +50,28 @@
       <div id="map"></div>
   </div>
   <script>   
-    const map = L.map('map')
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    }).addTo(map);
-    map.setView([54.2994311734903, -124.07226473093036], 6);
-    
+    });
+
+    var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    });
+
+    var map = L.map('map',{
+      center: [54.2994311734903, -124.07226473093036],
+      zoom: 6,
+      layers: [osm, satellite]
+    });
+
+    var baseMaps = {
+        "OpenStreetMap": osm,
+        "Satellite": satellite
+    };
+
+    var layerControl = L.control.layers(baseMaps).addTo(map);
+
     var geojsonMarkerOptions = {
         radius: 5,
         fillColor: "red",
@@ -65,28 +84,38 @@
     function onEachFeature(feature, layer) {
         // does this feature have a property named INCIDENT_NAME?
         if (feature.properties && feature.properties.INCIDENT_NAME && feature.properties.GEOGRAPHIC_DESCRIPTION) {
-            layer.bindPopup(feature.properties.INCIDENT_NAME + " - " + feature.properties.GEOGRAPHIC_DESCRIPTION);
+            layer.bindTooltip(feature.properties.INCIDENT_NAME + " - " + feature.properties.GEOGRAPHIC_DESCRIPTION);
         }
     };
 
-    async function load_shapefile() {
-      let url = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
+    async function load_shapefile(url) {
       const response = await fetch(url)
       const shape_obj = await response.json();
-      for (var i = shape_obj.features.length - 1; i >= 0; --i) {
-          if (shape_obj.features[i].properties.FIRE_STATUS == "Out") {
-              shape_obj.features.splice(i,1);
-          }
-      };
       return shape_obj;
     };
 
     async function main() {
-      const json = await load_shapefile();
-      L.geoJson(json, {
+      const firePointsUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
+      const firePerimetersUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/BCWS_FirePerimeters_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson' 
+      const points = await load_shapefile(firePointsUrl);
+      L.geoJson(points, {
           onEachFeature,
+          filter: function(feature, layer) {
+            return feature.properties.FIRE_STATUS !== "Out";
+          },
           pointToLayer: function (feature, latlng) {
               return L.circleMarker(latlng, geojsonMarkerOptions);
+          }
+      }).addTo(map);
+
+      const perims = await load_shapefile(firePerimetersUrl);
+      L.geoJson(perims, {
+          onEachFeature,
+          filter: function(feature, layer) {
+            return feature.properties.FIRE_STATUS != "Out";
+          },
+          style: function(feature){
+            return {color: "#ff0000"};
           }
       }).addTo(map);
     }
