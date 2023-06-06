@@ -67,6 +67,12 @@
       let url = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
       const response = await fetch(url)
       const shape_obj = await response.json();
+      for (var i = shape_obj.features.length - 1; i >= 0; --i) {
+          if (shape_obj.features[i].properties.FIRE_STATUS == "Out") {
+              shape_obj.features.splice(i,1);
+          }
+      }
+      console.log(shape_obj);
       return shape_obj;
     };
 
