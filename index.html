@@ -2,45 +2,51 @@
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin="">
-  </script>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+       crossorigin="">
+    </script>
     <style>
-
-      .container {
-        width: 100%;
+      body {
+        width: 100vw;
+        height: 100vh;
         font-family: Helvetica, sans-serif;
+        background: black;
       }
-
-      #map { 
-        height:800px; 
-      }
-      
-      #title_box {
-        text-align: center;
-        vertical-align: center;
-        padding:1px;
-        background-color: #ff7800;
+      .container{
         color: white;
-        margin: auto 0;
+        background: black;
+        width: 100vw;
+        height: 100vh;
+      }
+      .header {
+        padding: 2px;
+        text-align: center;
+        margin:0px;
+        font-size:20px;
+      }
+      #map { 
+        height:88vh; 
       }
 
-      h1 {
+      h2 {
         text-align:center;
+        vertical-align: center;
+        margin:0;
       }
+
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div id="title_box">
-      <h1>Active Wildfires in BC</h1>
-    </div>
-    <div id="map"></div>
-  </div class="container">
-  <script>
+      <div class="header">
+        <h2>Active Wildfires</h2>
+      </div>
+      <div id="map"></div>
+  </div>
+  <script>   
     const map = L.map('map')
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
@@ -49,7 +55,7 @@
     
     var geojsonMarkerOptions = {
         radius: 5,
-        fillColor: "#ff7800",
+        fillColor: "red",
         color: "#000",
         weight: 1,
         opacity: 1,
