@@ -103,7 +103,7 @@
             return {opacity: 0.6,
                     color:"#286a81"};
           }
-      }).addTo(map);
+      });
 
       const perims = await load_shapefile(firePerimetersUrl);
       const firePerims = L.geoJson(perims, {
@@ -127,12 +127,12 @@
       }).addTo(map);
 
       var baseLayers = {
-        "Fire": firePoints,
+        "Fire Centres": fireCentres,
         "Fire Perimeters": firePerims,
-        "Fire Centres": fireCentres
+        "Fire Location": firePoints
       };
       var layerControl = L.control.layers(baseMaps,baseLayers).addTo(map);
-
+      L.control.scale().addTo(map);
     }
 
     main();
