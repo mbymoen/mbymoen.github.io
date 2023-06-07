@@ -45,7 +45,7 @@
 <body>
   <div class="container">
       <div class="header">
-        <h2>Active Wildfires</h2>
+        <h2 id="title"></h2>
       </div>
       <div id="map"></div>
   </div>
@@ -79,34 +79,37 @@
         fillOpacity: 0.8
     };
 
+    var counter = 0;
     function onEachFeature(feature, layer) {
+        counter++;
         // does this feature have a property named INCIDENT_NAME?
         if (feature.properties && feature.properties.INCIDENT_NAME && feature.properties.GEOGRAPHIC_DESCRIPTION) {
             layer.bindTooltip(feature.properties.INCIDENT_NAME + " - " + feature.properties.GEOGRAPHIC_DESCRIPTION);
         }
+
     };
 
     async function load_shapefile(url) {
-      const response = await fetch(url)
-      const shape_obj = await response.json();
+      var response = await fetch(url)
+      var shape_obj = await response.json();
       return shape_obj;
     };
 
     async function main() {
-      const firePointsUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
-      const firePerimetersUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/BCWS_FirePerimeters_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson' 
-      const FireCentresUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/British_Columbia_Fire_Centre_Boundaries/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
+      var firePointsUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
+      var firePerimetersUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/BCWS_FirePerimeters_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson' 
+      var FireCentresUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/British_Columbia_Fire_Centre_Boundaries/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
 
-      const centres = await load_shapefile(FireCentresUrl);
-      const fireCentres = L.geoJson(centres, {
+      var centres = await load_shapefile(FireCentresUrl);
+      var fireCentres = L.geoJson(centres, {
           style: function(feature){
             return {opacity: 0.6,
                     color:"#286a81"};
           }
       });
 
-      const perims = await load_shapefile(firePerimetersUrl);
-      const firePerims = L.geoJson(perims, {
+      var perims = await load_shapefile(firePerimetersUrl);
+      var firePerims = L.geoJson(perims, {
           filter: function(feature, layer) {
             return feature.properties.FIRE_STATUS != "Out";
           },
@@ -115,8 +118,8 @@
           }
       }).addTo(map);
 
-      const points = await load_shapefile(firePointsUrl);
-      const firePoints = L.geoJson(points, {
+      var points = await load_shapefile(firePointsUrl);
+      var firePoints = L.geoJson(points, {
           onEachFeature,
           filter: function(feature, layer) {
             return feature.properties.FIRE_STATUS !== "Out";
@@ -125,6 +128,8 @@
               return L.circleMarker(latlng, geojsonMarkerOptions);
           }
       }).addTo(map);
+
+      document.getElementById("title").innerHTML = counter + ' Active Fires';
 
       var baseLayers = {
         "Fire Centres": fireCentres,
