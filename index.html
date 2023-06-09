@@ -1,5 +1,4 @@
 <html>
-
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -20,28 +19,23 @@
         width: 100vw;
         height: 100vh;
       }
-
       .header {
         padding: 4px;
         text-align: center;
         margin:4px;
         font-size:20px;
       }
-
       #map { 
         height:88vh; 
         width:99vw;
       }
-
       h2 {
         text-align:center;
         vertical-align: center;
         margin:0;
       }
-
   </style>
 </head>
-
 <body>
   <div class="container">
       <div class="header">
@@ -50,26 +44,37 @@
       <div id="map"></div>
   </div>
   <script>   
+    //Get satellite basemap layer
     var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     });
 
+    //Get OSM basemap layer
     var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
     });
 
+    //Create basemaps object
+    var baseMaps = {
+        "OpenStreetMap": osm,
+        "Satellite": satellite
+    };
+
+    var firePointsUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
+
+    var firePerimetersUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/BCWS_FirePerimeters_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson' 
+
+    var FireCentresUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/British_Columbia_Fire_Centre_Boundaries/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';    
+
+    //Create map
     var map = L.map('map',{
       center: [54.2994311734903, -124.07226473093036],
       zoom: 6,
       layers: [osm, satellite]
     });
 
-    var baseMaps = {
-        "OpenStreetMap": osm,
-        "Satellite": satellite
-    };
-
+    //Create styling options for fire point markers
     var geojsonMarkerOptions = {
         radius: 5,
         fillColor: "red",
@@ -79,27 +84,28 @@
         fillOpacity: 0.8
     };
 
+    //Add counter to keep track of number of active fires
     var counter = 0;
-    function onEachFeature(feature, layer) {
-        counter++;
-        // does this feature have a property named INCIDENT_NAME?
-        if (feature.properties && feature.properties.INCIDENT_NAME && feature.properties.GEOGRAPHIC_DESCRIPTION) {
-            layer.bindTooltip(feature.properties.INCIDENT_NAME + " - " + feature.properties.GEOGRAPHIC_DESCRIPTION);
-        }
 
+    //For each fire point, add tooltip on hover to show fire name and description if they exist, and increase the counter
+    function onEachFeature(feature, layer) {
+      if (feature.properties && feature.properties.INCIDENT_NAME && feature.properties.GEOGRAPHIC_DESCRIPTION) {
+          layer.bindTooltip(feature.properties.INCIDENT_NAME + " - " + feature.properties.GEOGRAPHIC_DESCRIPTION);
+      };
+      counter++;
     };
 
+    //load each URL's features as a shape object
     async function load_shapefile(url) {
       var response = await fetch(url)
       var shape_obj = await response.json();
       return shape_obj;
     };
 
+    //Function to execute on run
     async function main() {
-      var firePointsUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/arcgis/rest/services/BCWS_ActiveFires_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
-      var firePerimetersUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/BCWS_FirePerimeters_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson' 
-      var FireCentresUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/British_Columbia_Fire_Centre_Boundaries/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';
 
+      //get the fire centres shape object and create a geoJSON object from it, then style it and leave off map by default
       var centres = await load_shapefile(FireCentresUrl);
       var fireCentres = L.geoJson(centres, {
           style: function(feature){
@@ -108,6 +114,8 @@
           }
       });
 
+      //get the fire perimeters shape object and create a geoJSON object from it
+      //filter out fires where status = Out, then style it and add to map
       var perims = await load_shapefile(firePerimetersUrl);
       var firePerims = L.geoJson(perims, {
           filter: function(feature, layer) {
@@ -118,6 +126,8 @@
           }
       }).addTo(map);
 
+      //get the fire points shape object and create a geoJSON object from it
+      //add tooltip to each point, filter out fires where status = Out, then style the markers and add to map
       var points = await load_shapefile(firePointsUrl);
       var firePoints = L.geoJson(points, {
           onEachFeature,
@@ -129,19 +139,25 @@
           }
       }).addTo(map);
 
-      document.getElementById("title").innerHTML = counter + ' Active Fires';
-
-      var baseLayers = {
+      //create layers object to feed the layercontrol object
+      var layers = {
         "Fire Centres": fireCentres,
         "Fire Perimeters": firePerims,
         "Fire Location": firePoints
       };
-      var layerControl = L.control.layers(baseMaps,baseLayers).addTo(map);
+
+      //create layer control panel with basemaps and layers and add to the map
+      var layerControl = L.control.layers(baseMaps,layers).addTo(map);
+
+      //add scale bar
       L.control.scale().addTo(map);
+
+      //update page title to include count of active fires
+      document.getElementById("title").innerHTML = counter + ' Active Fires';
     }
 
+    //execute page
     main();
   </script>
 </body>
-
 </html>
