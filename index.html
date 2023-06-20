@@ -139,8 +139,21 @@
           }
       }).addTo(map);
 
+      var precipWMS = L.tileLayer.wms("https://geo.weather.gc.ca/geomet?", {
+          layers: "RADAR_1KM_RRAI",
+          version: "1.3.0",
+          opacity: 0.5
+        });
+
+      var precipCoverageWMS = L.tileLayer.wms("https://geo.weather.gc.ca/geomet?", {
+          layers: "RADAR_COVERAGE_RRAI.INV",
+          opacity: 0.2
+        })
+
       //create layers object to feed the layercontrol object
       var layers = {
+        "Coverage": precipCoverageWMS,
+        "Precipitation": precipWMS,
         "Fire Centres": fireCentres,
         "Fire Perimeters": firePerims,
         "Fire Location": firePoints
