@@ -65,7 +65,9 @@
 
     var firePerimetersUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/BCWS_FirePerimeters_PublicView/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson' 
 
+  /*
     var FireCentresUrl = 'https://services6.arcgis.com/ubm4tcTYICKBpist/ArcGIS/rest/services/British_Columbia_Fire_Centre_Boundaries/FeatureServer/0/query?where=1=1&objectIds=&time=&geometry=&geometryType=esriGeometryPolygon&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=&units=esriSRUnit_Meter&outFields=*&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnDistinctValues=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&quantizationParameters=&sqlFormat=none&f=pgeojson';    
+  */
 
     //Create map
     var map = L.map('map',{
@@ -105,6 +107,7 @@
     //Function to execute on run
     async function main() {
 
+      /*
       //get the fire centres shape object and create a geoJSON object from it, then style it and leave off map by default
       var centres = await load_shapefile(FireCentresUrl);
       var fireCentres = L.geoJson(centres, {
@@ -113,6 +116,7 @@
                     color:"#286a81"};
           }
       });
+      */
 
       //get the fire perimeters shape object and create a geoJSON object from it
       //filter out fires where status = Out, then style it and add to map
@@ -124,7 +128,7 @@
           style: function(feature){
             return {color: "#ff0000"};
           }
-      }).addTo(map);
+      })
 
       //get the fire points shape object and create a geoJSON object from it
       //add tooltip to each point, filter out fires where status = Out, then style the markers and add to map
@@ -154,7 +158,7 @@
       var layers = {
         "Coverage": precipCoverageWMS,
         "Precipitation": precipWMS,
-        "Fire Centres": fireCentres,
+        //"Fire Centres": fireCentres,
         "Fire Perimeters": firePerims,
         "Fire Location": firePoints
       };
@@ -166,7 +170,7 @@
       L.control.scale().addTo(map);
 
       //update page title to include count of active fires
-      document.getElementById("title").innerHTML = counter + ' Active Fires';
+      document.getElementById("title").innerHTML = counter + ' Active Fires in BC';
     }
 
     //execute page
